@@ -1,0 +1,25 @@
+# common
+**/.classpath
+**/cscope.*
+**/tags
+**/*.a
+**/*.o
+
+# visual studio code
+**/.vscode
+
+# maven
+**/target/
+
+# intellij
+.idea/
+**/*.iml
+
+# eclipse
+**/.project
+**/.settings
+**/.springBeans
+
+# for echos
+echos
+echoc
