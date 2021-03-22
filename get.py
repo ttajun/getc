@@ -1,0 +1,65 @@
+import sys
+import numpy
+import argparse
+import asyncio
+import aiohttp
+
+responseLength = list()
+
+async def get_length(url, insecure, timeout):
+    #print(url, insecure, timeout)
+    async with aiohttp.ClientSession() as sess:
+        #async with sess.get(url, ssl=insecure) as res:
+        #    text = await res.text()
+        #responseLength.append(len(text))
+        try:
+            async with sess.get(url, ssl=insecure) as res:
+                text = await res.text()
+            #print("Status:", res.status)
+            #print("Content-length:", res.headers)
+            #print("Content-length:", res.headers['Content-Length'])
+            #print("length:", len(text))
+            responseLength.append(len(text))
+
+        #except aiohttp.ClientSSLError as e:
+        except aiohttp.ClientConnectorSSLError as e:
+        #except aiohttp.ClientConnectorError as e:
+        #except aiohttp.ClientConnectorCertificateError as e:
+            print(e)
+            #assert isinstance(e, ssl.SSLError)
+
+async def main():
+
+    sys.tracebacklimit = 0
+    parser = argparse.ArgumentParser(description='Count http GET response data')
+    parser.add_argument("urls", metavar="URL",
+            nargs='+', help='test urls')
+    parser.add_argument('-t', '--timeout', type=int,
+            help='timeout (second)', default=300)
+    parser.add_argument('-k', '--insecure', help='skip TLS/SSL',
+            action="store_true")
+
+    args = parser.parse_args()
+
+    """
+    print(args.urls)
+    if args.insecure:
+        print(args.insecure)
+
+    if args.timeout:
+        print(args.timeout)
+    print("")
+    """
+
+    futures = [asyncio.ensure_future(
+        get_length(url, not args.insecure, args.timeout)) for url in args.urls]
+
+    await asyncio.gather(*futures)
+
+    print("평균:", numpy.mean(responseLength))
+    print("표준편차:", numpy.std(responseLength))
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
+loop.run_until_complete(asyncio.sleep(0))
+loop.close()
